@@ -14,6 +14,7 @@ struct SearchedResultInfo: Identifiable, Equatable, Hashable, Codable {
     let playTime: Int?
     let imageUrl: String?
     var isBookmarked: Bool = false
+    var bookmarkDate: Date?
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -21,7 +22,8 @@ struct SearchedResultInfo: Identifiable, Equatable, Hashable, Codable {
         case datetime
         case playTime
         case imageUrl
-        // isBookmarked는 제외
+        case bookmarkDate
+        /// isBookmarked 는 제외
     }
     
     static func == (lhs: SearchedResultInfo, rhs: SearchedResultInfo) -> Bool {
@@ -30,7 +32,7 @@ struct SearchedResultInfo: Identifiable, Equatable, Hashable, Codable {
         lhs.datetime == rhs.datetime &&
         lhs.playTime == rhs.playTime &&
         lhs.imageUrl == rhs.imageUrl
-        // isBookmarked는 비교에서 제외
+        /// isBookmarked 는 비교에서 제외
     }
 }
 

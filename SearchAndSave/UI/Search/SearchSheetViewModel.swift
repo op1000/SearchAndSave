@@ -41,7 +41,7 @@ class SearchSheetViewModel: ObservableObject {
         }
         
         @MainActor func update(state: inout State, searchText: String, count: Int, items: [SearchApi.ImageDocument], isEnd: Bool) {
-            if isEnd {
+            if isEnd, items.isEmpty {
                 Logger.log("fetch image max")
                 imageAllListLoaded = true
                 state.allListLoaded = imageAllListLoaded && vClipAllListLoaded
@@ -56,12 +56,12 @@ class SearchSheetViewModel: ObservableObject {
                 searchedImagePage[searchText] = 1
             }
             state.results = allResults.sorted { $0.datetime > $1.datetime }
-            imageAllListLoaded = (count == 0)
+            imageAllListLoaded = isEnd
             state.allListLoaded = imageAllListLoaded && vClipAllListLoaded
         }
         
         @MainActor func update(state: inout State, searchText: String, count: Int, items: [SearchApi.VClipDocument], isEnd: Bool) {
-            if isEnd {
+            if isEnd, items.isEmpty {
                 Logger.log("fetch vclip max")
                 vClipAllListLoaded = true
                 state.allListLoaded = imageAllListLoaded && vClipAllListLoaded
@@ -76,7 +76,7 @@ class SearchSheetViewModel: ObservableObject {
                 searchedVClipPage[searchText] = 1
             }
             state.results = allResults.sorted { $0.datetime > $1.datetime }
-            vClipAllListLoaded = (count == 0)
+            vClipAllListLoaded = isEnd
             state.allListLoaded = imageAllListLoaded && vClipAllListLoaded
         }
         
@@ -100,28 +100,10 @@ class SearchSheetViewModel: ObservableObject {
             }
             state.results = withBookmarks
         }
-        
-        @MainActor func bookmark(state: inout State, info: SearchedResultInfo) async {
-            guard let index = state.results.firstIndex(of: info) else { return }
-            state.results[index].isBookmarked = true
-            state.redrawId = UUID()
-            await bookmarkStorage.saveBookmark(info)
-        }
-        
-        @MainActor func removeFromBookmark(state: inout State, info: SearchedResultInfo) async {
-            guard let index = state.results.firstIndex(of: info) else { return }
-            state.results[index].isBookmarked = false
-            state.redrawId = UUID()
-            await bookmarkStorage.removeBookmark(info)
-        }
     }
     
     struct Action {
         let search = PassthroughSubject<String, Never>()
-        let loadMoreSearchedList = PassthroughSubject<String, Never>()
-        let searchFinished = PassthroughSubject<Void, Never>()
-        let bookmark = PassthroughSubject<SearchedResultInfo, Never>()
-        let removeFromBookmark = PassthroughSubject<SearchedResultInfo, Never>()
     }
     
     @Published var state: State
@@ -131,6 +113,7 @@ class SearchSheetViewModel: ObservableObject {
     // MARK: - Public
     
     let searchbarViewModel: SearchBarViewModel
+    let searchGridViewModel: SearchGridViewModel
     
     // MARK: - Private
     
@@ -139,10 +122,12 @@ class SearchSheetViewModel: ObservableObject {
     
     init(
         searchbarViewModel: SearchBarViewModel = SearchBarViewModel(),
+        searchGridViewModel: SearchGridViewModel = SearchGridViewModel(),
         searchApi: SearchApiType = SearchApi.shared,
         bookmarkStorage: BookmarkStorageType = BookmarkStorage.shared
     ) {
         self.searchbarViewModel = searchbarViewModel
+        self.searchGridViewModel = searchGridViewModel
         self.searchApi = searchApi
         self.state = State()
         self.action = Action()
@@ -157,17 +142,10 @@ class SearchSheetViewModel: ObservableObject {
 }
 
 extension SearchSheetViewModel {
-    func containsBookmark(info: SearchedResultInfo) -> Bool {
-        guard let index = state.results.firstIndex(of: info) else { return false }
-        return state.results[index].isBookmarked
-    }
-}
-
-extension SearchSheetViewModel {
     private func bind() {
         action.search
             .merge(with: searchbarViewModel.searchButtonPressed)
-            .merge(with: action.loadMoreSearchedList)
+            .merge(with: searchGridViewModel.action.loadMoreSearchedList)
             .filter { !$0.isEmpty }
             .flatMap { searchText in
                 Future<(SearchApi.ImageResponseDTO, String), Never> { [weak self] promise in
@@ -225,7 +203,8 @@ extension SearchSheetViewModel {
                         isEnd: responseVClip.meta.isEnd
                     )
                     await reactor.applyBookmark(state: &state)
-                    action.searchFinished.send()
+                    searchGridViewModel.action.setResults.send(state.results)
+                    searchGridViewModel.action.setAllListLoaded.send(state.allListLoaded)
                 }
             }
             .store(in: &cancellableSet)
@@ -235,24 +214,6 @@ extension SearchSheetViewModel {
                 Task { @MainActor [weak self] in
                     guard let self else { return }
                     reactor.clear(state: &state)
-                }
-            }
-            .store(in: &cancellableSet)
-        
-        action.bookmark
-            .sink { [weak self] info in
-                Task { @MainActor [weak self] in
-                    guard let self else { return }
-                    await reactor.bookmark(state: &state, info: info)
-                }
-            }
-            .store(in: &cancellableSet)
-        
-        action.removeFromBookmark
-            .sink { [weak self] info in
-                Task { @MainActor [weak self] in
-                    guard let self else { return }
-                    await reactor.removeFromBookmark(state: &state, info: info)
                 }
             }
             .store(in: &cancellableSet)

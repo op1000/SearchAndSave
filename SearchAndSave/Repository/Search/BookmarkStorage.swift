@@ -34,16 +34,22 @@ extension BookmarkStorage: BookmarkStorageType {
                let index = bookmarks.firstIndex(of: matchingItem) {
                 // update
                 bookmarks.remove(at: index)
-                bookmarks.append(bookmark)
+                var bookmarkToSave = bookmark
+                bookmarkToSave.bookmarkDate = Date()
+                bookmarks.append(bookmarkToSave)
             } else {
                 // add
-                bookmarks.append(bookmark)
+                var bookmarkToSave = bookmark
+                bookmarkToSave.bookmarkDate = Date()
+                bookmarks.append(bookmarkToSave)
             }
             guard let encoded = try? JSONEncoder().encode(bookmarks) else { return }
             storage.saveDefaults(key: .bookmark, val: encoded)
         } else {
             /// 저장된 정보 없음
-            guard let encoded = try? JSONEncoder().encode([bookmark]) else { return }
+            var bookmarkToSave = bookmark
+            bookmarkToSave.bookmarkDate = Date()
+            guard let encoded = try? JSONEncoder().encode([bookmarkToSave]) else { return }
             storage.saveDefaults(key: .bookmark, val: encoded)
         }
     }
@@ -56,7 +62,7 @@ extension BookmarkStorage: BookmarkStorageType {
     func loadSavedBookmarks() -> [SearchedResultInfo] {
         guard let stored = storage.loadDefaults(key: .bookmark) as? Data,
               let bookmarks = try? JSONDecoder().decode([SearchedResultInfo].self, from: stored) else { return [] }
-        return bookmarks.sorted { $0.datetime > $1.datetime }
+        return bookmarks.sorted { $0.bookmarkDate ?? $0.datetime > $1.bookmarkDate ?? $0.datetime }
     }
     
     func removeBookmark(_ bookmark: SearchedResultInfo) {

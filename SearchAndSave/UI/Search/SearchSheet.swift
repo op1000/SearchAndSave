@@ -33,7 +33,7 @@ struct SearchSheet: View {
                 Spacer()
             } else {
                 SearchGrid(
-                    viewModel: viewModel,
+                    viewModel: viewModel.searchGridViewModel,
                     searchText: $searchText,
                     items: viewModel.state.results
                 )

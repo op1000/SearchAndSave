@@ -9,7 +9,7 @@ import SwiftUI
 import Kingfisher
 
 struct SearchGrid: View {
-    @ObservedObject var viewModel: SearchSheetViewModel
+    @ObservedObject var viewModel: SearchGridViewModel
     @Binding var searchText: String
     let items: [SearchedResultInfo]
 
@@ -69,7 +69,7 @@ struct SearchGrid: View {
 }
 
 private struct GridCard: View {
-    @ObservedObject var viewModel: SearchSheetViewModel
+    @ObservedObject var viewModel: SearchGridViewModel
     let item: SearchedResultInfo
     let index: Int?
     @State var disappared = false
@@ -84,6 +84,7 @@ private struct GridCard: View {
                     .padding(.bottom, 8)
             }
         }
+        .background(.gray.opacity(0.5))
         .overlay(GeometryReader { reader in
             Color.clear.preference(
                 key: CellFrameKey.self,
@@ -121,7 +122,7 @@ private struct GridCard: View {
                 Logger.log("Image Loading Error : \(error)")
             }
             .resizable()
-            .aspectRatio(contentMode: .fill)
+            .aspectRatio(contentMode: .fit)
     }
     
     @ViewBuilder

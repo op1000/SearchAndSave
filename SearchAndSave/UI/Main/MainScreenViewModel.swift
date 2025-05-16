@@ -19,10 +19,26 @@ class MainScreenViewModel: ObservableObject {
     }
     
     actor Reactor {
+        private let bookmarkStorage: BookmarkStorageType
+        
+        init(bookmarkStorage: BookmarkStorageType = BookmarkStorage.shared) {
+            self.bookmarkStorage = bookmarkStorage
+        }
+        
+        // MARK: - bookmark
+        
+        @MainActor func loadBookmarks(state: inout State) async {
+            let bookmarks = await bookmarkStorage.loadSavedBookmarks()
+            state.results = bookmarks.map {
+                SearchedResultInfo(id: $0.id, thumbnail: $0.thumbnail, datetime: $0.datetime, playTime: $0.playTime, imageUrl: $0.imageUrl, isBookmarked: true)
+            }
+            state.redrawId = UUID()
+        }
     }
     
     struct Action {
         let onAppear = PassthroughSubject<Void, Never>()
+        let showSearchSheet = PassthroughSubject<Void, Never>()
     }
     
     @Published var state: State
@@ -31,12 +47,17 @@ class MainScreenViewModel: ObservableObject {
     
     // MARK: - Private
     
+    let searchGridViewModel: SearchGridViewModel
     private var cancellableSet: Set<AnyCancellable> = []
     
-    init() {
+    init(
+        searchGridViewModel: SearchGridViewModel = SearchGridViewModel(),
+        bookmarkStorage: BookmarkStorageType = BookmarkStorage.shared
+    ) {
+        self.searchGridViewModel = searchGridViewModel
         self.state = State()
         self.action = Action()
-        self.reactor = Reactor()
+        self.reactor = Reactor(bookmarkStorage: bookmarkStorage)
         
         bind()
     }
@@ -45,6 +66,28 @@ class MainScreenViewModel: ObservableObject {
 extension MainScreenViewModel {
     private func bind() {
         action.onAppear
+            .sink { [weak self] in
+                guard let self else { return }
+                presentSearchBottomSheet()
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    await reactor.loadBookmarks(state: &state)
+                    searchGridViewModel.action.setResults.send(state.results)
+                }
+            }
+            .store(in: &cancellableSet)
+        
+        SearchEventBus.shared.bookmarkChanged
+            .sink { [weak self] in
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    await reactor.loadBookmarks(state: &state)
+                    searchGridViewModel.action.setResults.send(state.results)
+                }
+            }
+            .store(in: &cancellableSet)
+        
+        action.showSearchSheet
             .sink { [weak self] in
                 guard let self else { return }
                 presentSearchBottomSheet()
@@ -57,7 +100,6 @@ extension MainScreenViewModel {
         let viewModel = SearchSheetViewModel()
         let view = SearchSheet(viewModel: viewModel)
         let viewController = SearchSheetViewController(rootView: view)
-        viewController.isModalInPresentation = true
         
         if let sheet = viewController.sheetPresentationController {
           sheet.detents = [

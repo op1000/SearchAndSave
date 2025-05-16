@@ -16,12 +16,6 @@ class SearchGridViewModel: ObservableObject {
         var allListLoaded = true
         var redrawId = UUID()
     }
-    
-    @Published var state: State
-    let action: Action
-    let reactor: Reactor
-    
-
     actor Reactor {
         private let bookmarkStorage: BookmarkStorageType
         
@@ -33,6 +27,10 @@ class SearchGridViewModel: ObservableObject {
         
         @MainActor func update(state: inout State, results: [SearchedResultInfo]) async {
             state.results = results
+        }
+        
+        @MainActor func update(state: inout State, allListLoaded: Bool) async {
+            state.allListLoaded = allListLoaded
         }
         
         // MARK: - bookmark
@@ -54,10 +52,15 @@ class SearchGridViewModel: ObservableObject {
     
     struct Action {
         let setResults = PassthroughSubject<[SearchedResultInfo], Never>()
+        let setAllListLoaded = PassthroughSubject<Bool, Never>()
         let loadMoreSearchedList = PassthroughSubject<String, Never>()
         let bookmark = PassthroughSubject<SearchedResultInfo, Never>()
         let removeFromBookmark = PassthroughSubject<SearchedResultInfo, Never>()
     }
+    
+    @Published var state: State
+    let action: Action
+    let reactor: Reactor
     
     // MARK: - Private
     
@@ -79,6 +82,13 @@ class SearchGridViewModel: ObservableObject {
 }
 
 extension SearchGridViewModel {
+    func containsBookmark(info: SearchedResultInfo) -> Bool {
+        guard let index = state.results.firstIndex(of: info) else { return false }
+        return state.results[index].isBookmarked
+    }
+}
+
+extension SearchGridViewModel {
     private func bind() {
         action.setResults
             .sink { results in
@@ -89,11 +99,21 @@ extension SearchGridViewModel {
             }
             .store(in: &cancellableSet)
         
+        action.setAllListLoaded
+            .sink { allListLoaded in
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    await reactor.update(state: &state, allListLoaded: allListLoaded)
+                }
+            }
+            .store(in: &cancellableSet)
+        
         action.bookmark
             .sink { [weak self] info in
                 Task { @MainActor [weak self] in
                     guard let self else { return }
                     await reactor.bookmark(state: &state, info: info)
+                    SearchEventBus.shared.bookmarkChanged.send()
                 }
             }
             .store(in: &cancellableSet)
@@ -103,6 +123,7 @@ extension SearchGridViewModel {
                 Task { @MainActor [weak self] in
                     guard let self else { return }
                     await reactor.removeFromBookmark(state: &state, info: info)
+                    SearchEventBus.shared.bookmarkChanged.send()
                 }
             }
             .store(in: &cancellableSet)
