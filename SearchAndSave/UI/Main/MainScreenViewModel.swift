@@ -66,18 +66,15 @@ class MainScreenViewModel: ObservableObject {
 extension MainScreenViewModel {
     private func bind() {
         action.onAppear
+            .delay(for: 0.5, scheduler: DispatchQueue.main)
             .sink { [weak self] in
                 guard let self else { return }
                 presentSearchBottomSheet()
-                Task { @MainActor [weak self] in
-                    guard let self else { return }
-                    await reactor.loadBookmarks(state: &state)
-                    searchGridViewModel.action.setResults.send(state.results)
-                }
             }
             .store(in: &cancellableSet)
         
-        SearchEventBus.shared.bookmarkChanged
+        action.onAppear
+            .merge(with: SearchEventBus.shared.bookmarkChanged)
             .sink { [weak self] in
                 Task { @MainActor [weak self] in
                     guard let self else { return }

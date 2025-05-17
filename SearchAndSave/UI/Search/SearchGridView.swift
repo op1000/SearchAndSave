@@ -12,6 +12,10 @@ struct SearchGrid: View {
     @ObservedObject var viewModel: SearchGridViewModel
     @Binding var searchText: String
     let items: [SearchedResultInfo]
+    
+    enum Constants {
+        static let sideMargin: CGFloat = 16
+    }
 
     var leftColumn: [SearchedResultInfo] {
         items.enumerated().compactMap { index, item in
@@ -30,7 +34,7 @@ struct SearchGrid: View {
             ScrollView {
                 LazyVStack(spacing: 0) {
                     HStack(alignment: .top, spacing: 8) {
-                        VStack(spacing: 8) {
+                        LazyVStack(spacing: 8) {
                             ForEach(leftColumn) { item in
                                 GridCard(
                                     viewModel: viewModel,
@@ -39,8 +43,8 @@ struct SearchGrid: View {
                                 )
                             }
                         }
-                        .frame(width: geometry.size.width / 2)
-                        VStack(spacing: 8) {
+                        .frame(width: calculateCellWidth(geometry))
+                        LazyVStack(spacing: 8) {
                             ForEach(rightColumn) { item in
                                 GridCard(
                                     viewModel: viewModel,
@@ -49,8 +53,9 @@ struct SearchGrid: View {
                                 )
                             }
                         }
-                        .frame(width: geometry.size.width / 2)
+                        .frame(width: calculateCellWidth(geometry))
                     }
+                    .padding(.horizontal, Constants.sideMargin)
                     if !viewModel.state.allListLoaded {
                         HStack(spacing: 0) {
                             Spacer()
@@ -65,6 +70,10 @@ struct SearchGrid: View {
                 }
             }
         }
+    }
+    
+    private func calculateCellWidth(_ geometry: GeometryProxy) -> CGFloat {
+        (geometry.size.width - (Constants.sideMargin * 2)) / 2
     }
 }
 
@@ -85,25 +94,7 @@ private struct GridCard: View {
             }
         }
         .background(.gray.opacity(0.5))
-        .overlay(GeometryReader { reader in
-            Color.clear.preference(
-                key: CellFrameKey.self,
-                value: reader.frame(in: .global)
-            )
-        })
-        .onPreferenceChange(CellFrameKey.self) { rect in
-            if rect.origin.y + rect.height + rect.origin.y < 0 {
-                disappared = true
-            } else {
-                disappared = false
-            }
-        }
-        .onChange(of: disappared) { value in
-            withAnimation(.easeIn(duration: 0.1)) {
-                hide = value
-            }
-        }
-        .opacity(hide ? 0 : 1)
+        .cornerRadius(16)
     }
     
     @ViewBuilder
@@ -122,7 +113,10 @@ private struct GridCard: View {
                 Logger.log("Image Loading Error : \(error)")
             }
             .resizable()
-            .aspectRatio(contentMode: .fit)
+            .diskCacheExpiration(.days(7))
+            .memoryCacheExpiration(.seconds(300))
+            .aspectRatio(contentMode: .fill)
+            .cornerRadius(16)
     }
     
     @ViewBuilder
@@ -187,13 +181,6 @@ private struct GridCard: View {
                     Spacer()
                 }
             }
-        }
-    }
-    
-    private struct CellFrameKey: PreferenceKey {
-        static var defaultValue: CGRect = .zero
-        static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
-            value = nextValue()
         }
     }
 }

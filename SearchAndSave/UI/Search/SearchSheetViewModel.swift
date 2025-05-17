@@ -87,6 +87,13 @@ class SearchSheetViewModel: ObservableObject {
             vClipAllListLoaded = false
         }
         
+        @MainActor func clear(state: inout State, keyword: String) {
+            searchedImageResults[keyword] = nil
+            searchedVClipResults[keyword] = nil
+            searchedImagePage[keyword] = nil
+            searchedVClipPage[keyword] = nil
+        }
+        
         // MARK: - bookmark
         
         @MainActor func applyBookmark(state: inout State) async {
@@ -144,7 +151,22 @@ class SearchSheetViewModel: ObservableObject {
 extension SearchSheetViewModel {
     private func bind() {
         action.search
-            .merge(with: searchbarViewModel.searchButtonPressed)
+            .merge(with: searchbarViewModel.searchButtonPressed
+                .flatMap { [weak self] keyword in
+                    Future<String, Never> { [weak self] promise in
+                        Task { @MainActor [weak self] in
+                            guard let self else {
+                                return promise(.success(keyword))
+                            }
+                            reactor.clear(state: &state)
+                            reactor.clear(state: &state, keyword: keyword)
+                            return promise(.success(keyword))
+                        }
+                    }
+                }
+                .delay(for: 0.5, scheduler: DispatchQueue.global(qos: .userInitiated))
+                .eraseToAnyPublisher()
+            )
             .merge(with: searchGridViewModel.action.loadMoreSearchedList)
             .filter { !$0.isEmpty }
             .flatMap { searchText in

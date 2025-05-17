@@ -37,7 +37,6 @@ struct SearchSheet: View {
                     searchText: $searchText,
                     items: viewModel.state.results
                 )
-                .padding(.horizontal, 16)
             }
         }
     }

@@ -10,6 +10,7 @@ import SwiftUI
 struct SearchBar: View {
     @ObservedObject var viewModel: SearchBarViewModel
     @Binding var text: String
+    @FocusState private var isFocused: Bool
     
     var body: some View {
         HStack {
@@ -21,6 +22,12 @@ struct SearchBar: View {
                 .submitLabel(.search)
                 .onSubmit {
                     viewModel.searchButtonPressed.send(text)
+                }
+                .focused($isFocused)
+                .onFirstAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        isFocused = true
+                    }
                 }
             if !text.isEmpty {
                 Button {
