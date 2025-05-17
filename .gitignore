@@ -1,2 +1,24 @@
-xcuserdata
-SearchAndSave.xcodeproj/xcuserdata
+### macOS ###
+# General
+.DS_Store
+
+## User settings
+xcuserdata/
+
+## compatibility with Xcode 3 and earlier (ignoring not required starting Xcode 4)
+build/
+
+### Projects ###
+*.xcodeproj
+*.xcworkspace
+
+### Tuist derived files ###
+graph.dot
+Derived/
+
+### Tuist managed dependencies ###
+Tuist/.build
+
+### Coco Pods ###
+Pods/
+Podfile.lock
