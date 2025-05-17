@@ -7,7 +7,9 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct MainScreen: View {
+    @ObservedObject var viewModel: MainScreenViewModel
+    
     var body: some View {
         VStack {
             Image(systemName: "globe")
@@ -16,9 +18,15 @@ struct ContentView: View {
             Text("Hello, world!")
         }
         .padding()
+        .navigationTitle("보관함")
+        .onAppear {
+            viewModel.action.onAppear.send()
+        }
     }
 }
 
 #Preview {
-    ContentView()
+    NavigationView {
+        MainScreen(viewModel: MainScreenViewModel())
+    }
 }
