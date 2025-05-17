@@ -258,7 +258,6 @@ let project = Project(
             bundleId: "$(PRODUCT_BUNDLE_IDENTIFIER)",
             sources: ["Targets/BackendKit/Sources/**"],
             resources: [
-                "Targets/BackendKit/Resources/**",
             ],
             dependencies: [
                 // framework
@@ -274,7 +273,6 @@ let project = Project(
             bundleId: "$(PRODUCT_BUNDLE_IDENTIFIER)",
             sources: ["Targets/DomainKit/Sources/**"],
             resources: [
-                "Targets/DomainKit/Resources/**",
             ],
             dependencies: [
                 // framework
@@ -291,7 +289,6 @@ let project = Project(
             bundleId: "$(PRODUCT_BUNDLE_IDENTIFIER)",
             sources: ["Targets/EnvironmentKit/Sources/**"],
             resources: [
-                "Targets/EnvironmentKit/Resources/**",
             ],
             dependencies: [
             ],
@@ -305,7 +302,6 @@ let project = Project(
             bundleId: "$(PRODUCT_BUNDLE_IDENTIFIER)",
             sources: ["Targets/RepositoryKit/Sources/**"],
             resources: [
-                "Targets/RepositoryKit/Resources/**",
             ],
             dependencies: [
                 // framework
