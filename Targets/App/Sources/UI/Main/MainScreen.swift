@@ -19,7 +19,7 @@ struct MainScreen: View {
         )
         .id(viewModel.state.redrawId)
         .padding(.horizontal, 16)
-        .navigationTitle("보관함")
+        .navigationTitle(I18n.savedBookmarks)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {

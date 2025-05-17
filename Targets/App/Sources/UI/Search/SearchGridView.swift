@@ -106,7 +106,7 @@ private struct GridCard: View {
             .backgroundDecode(true)
             .downloadPriority(0)
             .placeholder {
-                Image(systemName: "doc.text.image.fill")
+                Asset.resourceIcError.swiftUIImage
                     .font(.largeTitle)
                     .opacity(0.3)
             }
@@ -174,7 +174,7 @@ private struct GridCard: View {
             }
             if item.imageUrl != nil {
                 HStack {
-                    Text("image")
+                    Text(I18n.image)
                         .font(.caption)
                         .foregroundStyle(.white)
                         .padding(3)

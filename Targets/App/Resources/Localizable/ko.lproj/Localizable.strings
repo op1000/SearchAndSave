@@ -1,0 +1,10 @@
+/* 
+  Localizable.strings
+  SearchAndSave
+
+  Created by NakCheon Jung on 5/17/25.
+  
+*/
+SearchBarPlaceholder = "검색할 내용을 입력하세요.";
+SavedBookmarks = "보관함";
+Image = "이미지";

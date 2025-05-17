@@ -16,7 +16,7 @@ struct SearchBar: View {
         HStack {
             Image(systemName: "magnifyingglass")
             
-            TextField("검색할 내용을 입력하세요.", text: $text)
+            TextField(I18n.searchBarPlaceholder, text: $text)
                 .foregroundColor(.primary)
                 .font(.title3)
                 .submitLabel(.search)
