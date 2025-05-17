@@ -261,56 +261,56 @@ let project = Project(
                 resources: [
                 ],
                 dependencies: [
-                // framework
-                .target(name: "EnvironmentKit"),
-            ],
-            settings: APP.backendKitSettings
-        ),
+                    // framework
+                    .target(name: "EnvironmentKit"),
+                ],
+                settings: APP.backendKitSettings
+            ),
         
-        .target(
-            name: "domainKit",
-            destinations: .iOS,
-            product: .framework,
-            bundleId: "$(PRODUCT_BUNDLE_IDENTIFIER)",
-            sources: ["Targets/DomainKit/Sources/**"],
-            resources: [
-            ],
-            dependencies: [
-                // framework
-                .target(name: "EnvironmentKit"),
-                .target(name: "BackendKit"),
-            ],
-            settings: APP.domainKitSettings
-        ),
+            .target(
+                name: "domainKit",
+                destinations: .iOS,
+                product: .framework,
+                bundleId: "$(PRODUCT_BUNDLE_IDENTIFIER)",
+                sources: ["Targets/DomainKit/Sources/**"],
+                resources: [
+                ],
+                dependencies: [
+                    // framework
+                    .target(name: "EnvironmentKit"),
+                    .target(name: "BackendKit"),
+                ],
+                settings: APP.domainKitSettings
+            ),
         
-        .target(
-            name: "EnvironmentKit",
-            destinations: .iOS,
-            product: .framework,
-            bundleId: "$(PRODUCT_BUNDLE_IDENTIFIER)",
-            sources: ["Targets/EnvironmentKit/Sources/**"],
-            resources: [
-            ],
-            dependencies: [
-            ],
-            settings: APP.environmentKitSettings
-        ),
+            .target(
+                name: "EnvironmentKit",
+                destinations: .iOS,
+                product: .framework,
+                bundleId: "$(PRODUCT_BUNDLE_IDENTIFIER)",
+                sources: ["Targets/EnvironmentKit/Sources/**"],
+                resources: [
+                ],
+                dependencies: [
+                ],
+                settings: APP.environmentKitSettings
+            ),
         
-        .target(
-            name: "RepositoryKit",
-            destinations: .iOS,
-            product: .framework,
-            bundleId: "$(PRODUCT_BUNDLE_IDENTIFIER)",
-            sources: ["Targets/RepositoryKit/Sources/**"],
-            resources: [
-            ],
-            dependencies: [
-                // framework
-                .target(name: "EnvironmentKit"),
-                .target(name: "domainKit"),
-            ],
-            settings: APP.repositoryKitSettings
-        )
+            .target(
+                name: "RepositoryKit",
+                destinations: .iOS,
+                product: .framework,
+                bundleId: "$(PRODUCT_BUNDLE_IDENTIFIER)",
+                sources: ["Targets/RepositoryKit/Sources/**"],
+                resources: [
+                ],
+                dependencies: [
+                    // framework
+                    .target(name: "EnvironmentKit"),
+                    .target(name: "domainKit"),
+                ],
+                settings: APP.repositoryKitSettings
+            )
     ],
     schemes: [
         .scheme(
