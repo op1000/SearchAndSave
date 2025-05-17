@@ -13,28 +13,26 @@ protocol SearchApiType {
 }
 
 class SearchApi {
-    enum APIError: Error {
-        case invalidSearchKeyword
-        case invalidURL
-        case noData
-    }
-    
     private enum Constants {
-        static let kakaoApiKey = "545713aabe1f1cd9663ab3016ef2a9e6"
         static let baseUrl = "https://dapi.kakao.com"
         static let searchImage = "/v2/search/image"
         static let searchMovie = "/v2/search/vclip"
         static let fetchCount = 20
     }
     
-    private var api: URLSession?
+    private var api: URLSession
+    private let backendService: BackendService
     
     // MARK: - life cycle
     
     static let shared = SearchApi()
     
-    init(api: URLSession = URLSession.shared) {
+    init(
+        api: URLSession = URLSession.shared,
+        backendService: BackendService = BackendService()
+    ) {
         self.api = api
+        self.backendService = backendService
     }
 }
 
@@ -43,10 +41,10 @@ class SearchApi {
 extension SearchApi: SearchApiType {
     func searchVClip(query: String, page: Int) async throws -> VClipResponseDTO {
         guard var components = URLComponents(string: Constants.baseUrl + Constants.searchMovie) else {
-            throw APIError.invalidURL
+            throw BackendService.APIError.invalidURL
         }
         guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-            throw APIError.invalidSearchKeyword
+            throw BackendService.APIError.invalidSearchKeyword
         }
         components.queryItems = [
           URLQueryItem(name: "query", value: "\(encodedQuery)"),
@@ -55,28 +53,20 @@ extension SearchApi: SearchApiType {
           URLQueryItem(name: "sort", value: "recency"),
         ]
         guard let url = components.url else {
-            throw APIError.invalidURL
-        }
-        guard let api else {
-            throw APIError.invalidURL
+            throw BackendService.APIError.invalidURL
         }
         
-        var request = URLRequest(url: url)
-        request.setValue("KakaoAK \(Constants.kakaoApiKey)", forHTTPHeaderField: "Authorization")
-
-        let (data, _) = try await api.data(for: request)
-        logResponseString(data: data)
-        
-        let result = try JSONDecoder().decode(VClipResponseDTO.self, from: data)
+        let request = URLRequest(url: url)
+        let result: VClipResponseDTO = try await backendService.request(request, session: api)
         return result
     }
     
     func searchImage(query: String, page: Int) async throws -> ImageResponseDTO {
         guard var components = URLComponents(string: Constants.baseUrl + Constants.searchImage) else {
-            throw APIError.invalidURL
+            throw BackendService.APIError.invalidURL
         }
         guard let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
-            throw APIError.invalidSearchKeyword
+            throw BackendService.APIError.invalidSearchKeyword
         }
         components.queryItems = [
           URLQueryItem(name: "query", value: "\(encodedQuery)"),
@@ -85,18 +75,10 @@ extension SearchApi: SearchApiType {
           URLQueryItem(name: "sort", value: "recency"),
         ]
         guard let url = components.url else {
-            throw APIError.invalidURL
+            throw BackendService.APIError.invalidURL
         }
-        guard let api else {
-            throw APIError.invalidURL
-        }
-        var request = URLRequest(url: url)
-        request.setValue("KakaoAK \(Constants.kakaoApiKey)", forHTTPHeaderField: "Authorization")
-
-        let (data, _) = try await api.data(for: request)
-        logResponseString(data: data)
-        
-        let result = try JSONDecoder().decode(ImageResponseDTO.self, from: data)
+        let request = URLRequest(url: url)
+        let result: ImageResponseDTO = try await backendService.request(request, session: api)
         return result
     }
 }
