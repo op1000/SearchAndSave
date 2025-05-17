@@ -56,15 +56,15 @@ private struct APP {
             .debug(name: ConfigurationName(stringLiteral: APP.Configurations.debug.rawValue), settings: [
                 "PRODUCT_BUNDLE_IDENTIFIER": SettingValue(stringLiteral: APP.BackendKitBundleId.debug.rawValue),
                 "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "DEBUG DEV_BUILD",
-            ]),
+            ], xcconfig: "Targets/Xcconfigs/Secrets.xcconfig"),
             .debug(name: ConfigurationName(stringLiteral: APP.Configurations.stage.rawValue), settings: [
                 "PRODUCT_BUNDLE_IDENTIFIER": SettingValue(stringLiteral: APP.BackendKitBundleId.stage.rawValue),
                 "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "DEBUG STAGE_BUILD",
-            ]),
+            ], xcconfig: "Targets/Xcconfigs/Secrets.xcconfig"),
             .release(name: ConfigurationName(stringLiteral: APP.Configurations.release.rawValue), settings: [
                 "PRODUCT_BUNDLE_IDENTIFIER": SettingValue(stringLiteral: APP.BackendKitBundleId.release.rawValue),
                 "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "RELEASE_BUILD",
-            ])
+            ], xcconfig: "Targets/Xcconfigs/Secrets.xcconfig")
         ]
     )
     
@@ -250,16 +250,17 @@ let project = Project(
         ),
         
         // MARK: - framwork
-
-        .target(
-            name: "BackendKit",
-            destinations: .iOS,
-            product: .framework,
-            bundleId: "$(PRODUCT_BUNDLE_IDENTIFIER)",
-            sources: ["Targets/BackendKit/Sources/**"],
-            resources: [
-            ],
-            dependencies: [
+        
+            .target(
+                name: "BackendKit",
+                destinations: .iOS,
+                product: .framework,
+                bundleId: "$(PRODUCT_BUNDLE_IDENTIFIER)",
+                infoPlist: .extendingDefault(with: ["KAKAO_API_KEY": "$(KAKAO_API_KEY)"]),
+                sources: ["Targets/BackendKit/Sources/**"],
+                resources: [
+                ],
+                dependencies: [
                 // framework
                 .target(name: "EnvironmentKit"),
             ],

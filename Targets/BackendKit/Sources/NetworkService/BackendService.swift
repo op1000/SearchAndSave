@@ -9,7 +9,6 @@ import Foundation
 
 public class BackendService {
     private enum Constants {
-        static let kakaoApiKey = "545713aabe1f1cd9663ab3016ef2a9e6"
         static let expireTimeInSeconds: TimeInterval = 300 // 5분
     }
     
@@ -30,7 +29,10 @@ public class BackendService {
         }
         
         var requstToSend = request
-        requstToSend.setValue("KakaoAK \(Constants.kakaoApiKey)", forHTTPHeaderField: "Authorization")
+        let bundle = Bundle(for: BackendService.self)
+        if let apiKey = bundle.object(forInfoDictionaryKey: "KAKAO_API_KEY") as? String {
+            requstToSend.setValue("KakaoAK \(apiKey)", forHTTPHeaderField: "Authorization")
+        }
         requstToSend.cachePolicy = .returnCacheDataElseLoad
         
         let (data, response) = try await session.data(for: requstToSend)
