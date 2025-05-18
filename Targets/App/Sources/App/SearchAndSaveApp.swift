@@ -11,7 +11,7 @@ import SwiftUI
 struct SearchAndSaveApp: App {
     var body: some Scene {
         WindowGroup {
-            NavigationView {
+            NavigationStack {
                 MainScreen(viewModel: MainScreenViewModel())
             }
         }

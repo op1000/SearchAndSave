@@ -101,16 +101,22 @@ extension MainScreenViewModel {
         let viewController = SearchSheetViewController(rootView: view)
         
         if let sheet = viewController.sheetPresentationController {
-          sheet.detents = [
-            .medium(),
-            .large(),
-            .custom { _ in
-                100
+            if UIDevice.current.userInterfaceIdiom == .pad {
+                sheet.detents = [
+                    .large()
+                ]
+            } else {
+                sheet.detents = [
+                    .medium(),
+                    .large(),
+                    .custom { _ in
+                        100
+                    }
+                ]
+                sheet.prefersGrabberVisible = true
+                sheet.largestUndimmedDetentIdentifier = .none
+                sheet.prefersScrollingExpandsWhenScrolledToEdge = false
             }
-          ]
-          sheet.prefersGrabberVisible = true
-          sheet.largestUndimmedDetentIdentifier = .none
-          sheet.prefersScrollingExpandsWhenScrolledToEdge = false
         }
         topViewController.present(viewController, animated: true)
     }
@@ -118,7 +124,7 @@ extension MainScreenViewModel {
     private func presentImplementationTypeBottomSheet() {
         guard let topViewController = UIApplication.topViewController() else { return }
         let actionSheet = UIAlertController(title: I18n.selectImplementationTypeForSearch, message: nil, preferredStyle: .actionSheet)
-
+        
         actionSheet.addAction(UIAlertAction(title: "SwiftUI", style: .default) { [weak self] _ in
             guard let self else { return }
             presentSearchBottomSheet(type: .swiftui)
@@ -128,7 +134,14 @@ extension MainScreenViewModel {
             presentSearchBottomSheet(type: .uikit)
         })
         actionSheet.addAction(UIAlertAction(title: I18n.cancelButtonTitle, style: .cancel, handler: nil))
-
+        
+        if let popoverController = actionSheet.popoverPresentationController {
+            // to prevent ipad crash
+            popoverController.sourceView = topViewController.view
+            popoverController.sourceRect = CGRect(x: topViewController.view.bounds.midX, y: topViewController.view.bounds.midY, width: 0, height: 0)
+            popoverController.permittedArrowDirections = []
+        }
+        
         topViewController.present(actionSheet, animated: true, completion: nil)
     }
 }
