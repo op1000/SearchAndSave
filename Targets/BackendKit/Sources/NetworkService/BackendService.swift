@@ -6,12 +6,10 @@
 //
 
 import Foundation
+import EnvironmentKit
 
 public class BackendService {
-    private enum Constants {
-        static let expireTimeInSeconds: TimeInterval = 300 // 5분
-    }
-    
+
     enum APIError: Error {
         case invalidSearchKeyword
         case invalidURL
@@ -58,7 +56,7 @@ extension BackendService {
               let cachedDate = cacheInfo[urlString] else {
             return true
         }
-        let isExpired = Date().timeIntervalSince(cachedDate) > Constants.expireTimeInSeconds
+        let isExpired = Date().timeIntervalSince(cachedDate) > Constant.Caching.timeoutInSec
         return isExpired
     }
 }

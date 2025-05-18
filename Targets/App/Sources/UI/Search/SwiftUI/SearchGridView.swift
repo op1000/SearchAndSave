@@ -120,7 +120,7 @@ private struct GridCard: View {
             }
             .resizable()
             .diskCacheExpiration(.days(7))
-            .memoryCacheExpiration(.seconds(300))
+            .memoryCacheExpiration(.seconds(Constant.Caching.timeoutInSec))
             .aspectRatio(contentMode: .fill)
             .cornerRadius(16)
     }
