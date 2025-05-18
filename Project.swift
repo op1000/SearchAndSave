@@ -245,6 +245,7 @@ let project = Project(
                 .target(name: "RepositoryKit"),
                 // spm
                 .external(name: "Kingfisher"),
+                .external(name: "SnapKit"),
             ],
             settings: APP.appSettings
         ),

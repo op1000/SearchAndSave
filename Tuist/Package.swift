@@ -8,6 +8,7 @@
     let packageSettings = PackageSettings(
         productTypes: [
             "Kingfisher": .framework,
+            "SnapKit": .framework,
         ],
         baseSettings: .settings(
             base: [
@@ -35,5 +36,6 @@ let package = Package(
     name: "SearchAndSave",
     dependencies: [
         .package(url: "https://github.com/onevcat/Kingfisher.git", exact: "8.3.2"),
+        .package(url: "https://github.com/SnapKit/SnapKit.git", exact: "5.7.1"),
     ]
 )

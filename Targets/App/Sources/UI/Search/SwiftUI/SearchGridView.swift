@@ -75,7 +75,11 @@ struct SearchGrid: View {
     }
     
     private func calculateCellWidth(_ geometry: GeometryProxy) -> CGFloat {
-        (geometry.size.width - (Constants.sideMargin * 2)) / 2
+        let width = (geometry.size.width - (Constants.sideMargin * 2)) / 2
+        if width < 0 {
+            return 0
+        }
+        return width
     }
 }
 

@@ -8,3 +8,5 @@
 SearchBarPlaceholder = "Please enter your search query.";
 SavedBookmarks = "Saved bookmarks";
 Image = "image";
+SelectImplementationTypeForSearch = "Please select the implementation method of the search screen.";
+CancelButtonTitle = "Cancel";

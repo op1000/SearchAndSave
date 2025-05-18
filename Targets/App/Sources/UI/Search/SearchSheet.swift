@@ -33,17 +33,25 @@ struct SearchSheet: View {
             if viewModel.state.results.isEmpty {
                 Spacer()
             } else {
-                SearchGrid(
-                    viewModel: viewModel.searchGridViewModel,
-                    searchText: $searchText,
-                    items: viewModel.state.results
-                )
+                if viewModel.implementationType == .swiftui {
+                    SearchGrid(
+                        viewModel: viewModel.searchGridViewModel,
+                        searchText: $searchText,
+                        items: viewModel.state.results
+                    )
+                } else {
+                    SearchGridUIKitView(
+                        viewModel: viewModel.searchGridViewModel,
+                        searchKeyworkd: searchText
+                    )
+                    .ignoresSafeArea()
+                }
             }
         }
     }
 }
 
 #Preview {
-    SearchSheet(viewModel: SearchSheetViewModel())
+    SearchSheet(viewModel: SearchSheetViewModel(implementationType: .swiftui))
 }
 

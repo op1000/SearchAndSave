@@ -7,6 +7,7 @@
 
 import Foundation
 import BackendKit
+import UIKit
 
 public struct SearchedResultInfo: Identifiable, Equatable, Hashable, Codable, Sendable {
     public var id: String
@@ -16,6 +17,7 @@ public struct SearchedResultInfo: Identifiable, Equatable, Hashable, Codable, Se
     public let imageUrl: String?
     public var isBookmarked = false
     public var bookmarkDate: Date?
+    public var thumbnailImageSize: CGSize?
     
     public enum CodingKeys: String, CodingKey {
         case id
@@ -24,7 +26,7 @@ public struct SearchedResultInfo: Identifiable, Equatable, Hashable, Codable, Se
         case playTime
         case imageUrl
         case bookmarkDate
-        /// isBookmarked 는 제외
+        /// isBookmarked, thumbnailImageSize 는 제외
     }
     
     public static func == (lhs: SearchedResultInfo, rhs: SearchedResultInfo) -> Bool {
@@ -33,7 +35,7 @@ public struct SearchedResultInfo: Identifiable, Equatable, Hashable, Codable, Se
         lhs.datetime == rhs.datetime &&
         lhs.playTime == rhs.playTime &&
         lhs.imageUrl == rhs.imageUrl
-        /// isBookmarked 는 비교에서 제외
+        /// isBookmarked, thumbnailImageSize 는 비교에서 제외
     }
     
     public init(id: String, thumbnail: String, datetime: Date, playTime: Int?, imageUrl: String?, isBookmarked: Bool = false, bookmarkDate: Date? = nil) {

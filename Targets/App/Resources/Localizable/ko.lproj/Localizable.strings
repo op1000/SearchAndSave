@@ -8,3 +8,5 @@
 SearchBarPlaceholder = "검색할 내용을 입력하세요.";
 SavedBookmarks = "보관함";
 Image = "이미지";
+SelectImplementationTypeForSearch = "검색화면이 구현된 방식을 선택해주세요.";
+CancelButtonTitle = "취소";

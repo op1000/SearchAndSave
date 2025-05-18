@@ -13,6 +13,11 @@ import RepositoryKit
 import BackendKit
 
 class SearchSheetViewModel: ObservableObject {
+    enum ImplementationType {
+        case swiftui
+        case uikit
+    }
+    
     // MARK: - SANE
     
     struct State: Sendable {
@@ -128,15 +133,18 @@ class SearchSheetViewModel: ObservableObject {
     
     // MARK: - Private
     
+    let implementationType: ImplementationType
     private let searchApi: SearchApiType
     private var cancellableSet: Set<AnyCancellable> = []
     
     init(
+        implementationType: ImplementationType,
         searchbarViewModel: SearchBarViewModel = SearchBarViewModel(),
         searchGridViewModel: SearchGridViewModel = SearchGridViewModel(),
         searchApi: SearchApiType = SearchApi.shared,
         bookmarkStorage: BookmarkStorageType = BookmarkStorage.shared
     ) {
+        self.implementationType = implementationType
         self.searchbarViewModel = searchbarViewModel
         self.searchGridViewModel = searchGridViewModel
         self.searchApi = searchApi

@@ -71,7 +71,7 @@ extension MainScreenViewModel {
             .delay(for: 0.5, scheduler: DispatchQueue.main)
             .sink { [weak self] in
                 guard let self else { return }
-                presentSearchBottomSheet()
+                presentImplementationTypeBottomSheet()
             }
             .store(in: &cancellableSet)
         
@@ -89,14 +89,14 @@ extension MainScreenViewModel {
         action.showSearchSheet
             .sink { [weak self] in
                 guard let self else { return }
-                presentSearchBottomSheet()
+                presentImplementationTypeBottomSheet()
             }
             .store(in: &cancellableSet)
     }
     
-    private func presentSearchBottomSheet() {
+    private func presentSearchBottomSheet(type: SearchSheetViewModel.ImplementationType) {
         guard let topViewController = UIApplication.topViewController() else { return }
-        let viewModel = SearchSheetViewModel()
+        let viewModel = SearchSheetViewModel(implementationType: type)
         let view = SearchSheet(viewModel: viewModel)
         let viewController = SearchSheetViewController(rootView: view)
         
@@ -113,5 +113,22 @@ extension MainScreenViewModel {
           sheet.prefersScrollingExpandsWhenScrolledToEdge = false
         }
         topViewController.present(viewController, animated: true)
+    }
+    
+    private func presentImplementationTypeBottomSheet() {
+        guard let topViewController = UIApplication.topViewController() else { return }
+        let actionSheet = UIAlertController(title: I18n.selectImplementationTypeForSearch, message: nil, preferredStyle: .actionSheet)
+
+        actionSheet.addAction(UIAlertAction(title: "SwiftUI", style: .default) { [weak self] _ in
+            guard let self else { return }
+            presentSearchBottomSheet(type: .swiftui)
+        })
+        actionSheet.addAction(UIAlertAction(title: "UIKit", style: .default) { [weak self] _ in
+            guard let self else { return }
+            presentSearchBottomSheet(type: .uikit)
+        })
+        actionSheet.addAction(UIAlertAction(title: I18n.cancelButtonTitle, style: .cancel, handler: nil))
+
+        topViewController.present(actionSheet, animated: true, completion: nil)
     }
 }

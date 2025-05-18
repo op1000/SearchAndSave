@@ -36,6 +36,12 @@ class SearchGridViewModel: ObservableObject {
             state.allListLoaded = allListLoaded
         }
         
+        @MainActor func setImageSize(state: inout State, info: SearchedResultInfo, size: CGSize) {
+            guard let index = state.results.firstIndex(of: info) else { return }
+            state.results[index].thumbnailImageSize = size
+            state.redrawId = UUID()
+        }
+        
         // MARK: - bookmark
         
         @MainActor func bookmark(state: inout State, info: SearchedResultInfo) async {
@@ -59,6 +65,9 @@ class SearchGridViewModel: ObservableObject {
         let loadMoreSearchedList = PassthroughSubject<String, Never>()
         let bookmark = PassthroughSubject<SearchedResultInfo, Never>()
         let removeFromBookmark = PassthroughSubject<SearchedResultInfo, Never>()
+        let listChanged = PassthroughSubject<[SearchedResultInfo], Never>()
+        let setImageSize = PassthroughSubject<(SearchedResultInfo, CGSize, Int), Never>()
+        let indexChanged = PassthroughSubject<Int, Never>()
     }
     
     @Published var state: State
@@ -98,6 +107,7 @@ extension SearchGridViewModel {
                 Task { @MainActor [weak self] in
                     guard let self else { return }
                     await reactor.update(state: &state, results: results)
+                    action.listChanged.send(state.results)
                 }
             }
             .store(in: &cancellableSet)
@@ -127,6 +137,16 @@ extension SearchGridViewModel {
                     guard let self else { return }
                     await reactor.removeFromBookmark(state: &state, info: info)
                     SearchEventBus.shared.bookmarkChanged.send()
+                }
+            }
+            .store(in: &cancellableSet)
+        
+        action.setImageSize
+            .sink { [weak self] info, size, index in
+                Task { @MainActor [weak self] in
+                    guard let self else { return }
+                    reactor.setImageSize(state: &state, info: info, size: size)
+                    action.indexChanged.send(index)
                 }
             }
             .store(in: &cancellableSet)
